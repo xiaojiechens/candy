@@ -1,0 +1,1 @@
+{"url": "ws://777.pzazq.com:80/fxCasino/fxLB?gameType=5902", "iface": "\u65e0\u7ebf\u7f51\u7edc\u8fde\u63a5", "account": "squallice", "code1": "0638", "code2": "638", "code3": "30638", "code4": "80638", "time_interval": 6, "eliminate_number": 8}

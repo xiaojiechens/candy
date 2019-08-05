@@ -1,0 +1,2 @@
+{"pid_num": 8172, "wagers_id": "395871676888", "eliminate_cnt": 0, "stick_num": 11, "lines": [[{"ElementID": 6, "GridNum": 1, "Grids": "8", "Payoff": 0, "BrickNum": [34]}], []]}
+{"pid_num": 8172, "wagers_id": "395871676888", "eliminate_cnt": 0, "stick_num": 11, "lines": [[{"ElementID": 6, "GridNum": 1, "Grids": "8", "Payoff": 0, "BrickNum": [34]}], []]}

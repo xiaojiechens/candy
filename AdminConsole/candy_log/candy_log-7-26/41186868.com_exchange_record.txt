@@ -1,0 +1,12 @@
+{"pid_num": 6792, "balance": 88.5, "amount": 7.6, "balance_total": 96.1, "bet_number": 2000}
+{"pid_num": 6792, "balance": 72.8, "amount": 4.3, "balance_total": 77.1, "bet_number": 3000}
+{"pid_num": 6792, "balance": 72.8, "amount": 4.3, "balance_total": 77.1, "bet_number": 3000}
+{"pid_num": 6792, "balance": 72.8, "amount": 4.3, "balance_total": 77.1, "bet_number": 3000}
+{"pid_num": 6792, "balance": 72.8, "amount": 4.3, "balance_total": 77.1, "bet_number": 3000}
+{"pid_num": 6792, "balance": 72.8, "amount": 4.3, "balance_total": 77.1, "bet_number": 3000}
+{"pid_num": 6792, "balance": 72.8, "amount": 4.3, "balance_total": 77.1, "bet_number": 3000}
+{"pid_num": 6792, "balance": 72.8, "amount": 4.3, "balance_total": 77.1, "bet_number": 3000}
+{"pid_num": 6792, "balance": 72.8, "amount": 4.3, "balance_total": 77.1, "bet_number": 3000}
+{"pid_num": 6792, "balance": 72.8, "amount": 4.3, "balance_total": 77.1, "bet_number": 3000}
+{"pid_num": 6792, "balance": 72.8, "amount": 4.3, "balance_total": 77.1, "bet_number": 3000}
+{"pid_num": 6792, "balance": 72.8, "amount": 4.3, "balance_total": 77.1, "bet_number": 3000}
