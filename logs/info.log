@@ -1,0 +1,22 @@
+2019-08-06 22:03:31.114-| Starting Application on macdeMacBook-Pro-2.local with PID 2430 (/Users/mac/Downloads/Projects/candy/Candy/AdminConsole/target/classes started by mac in /Users/mac/Downloads/Projects/candy/Candy)
+2019-08-06 22:03:31.117-| The following profiles are active: dev
+2019-08-06 22:03:31.224-| Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2019-08-06 22:03:31.225-| For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2019-08-06 22:03:32.552-| Tomcat initialized with port(s): 8080 (http)
+2019-08-06 22:03:32.601-| Initializing ProtocolHandler ["http-nio-8080"]
+2019-08-06 22:03:32.643-| Starting service [Tomcat]
+2019-08-06 22:03:32.645-| Starting Servlet engine: [Apache Tomcat/9.0.21]
+2019-08-06 22:03:32.799-| Initializing Spring embedded WebApplicationContext
+2019-08-06 22:03:32.799-| Root WebApplicationContext: initialization completed in 1574 ms
+2019-08-06 22:03:33.030-| Initializing ExecutorService 'applicationTaskExecutor'
+2019-08-06 22:03:33.112-| Adding welcome page: class path resource [static/index.html]
+2019-08-06 22:03:33.154-| Initializing ExecutorService 'taskScheduler'
+2019-08-06 22:03:33.476-| LiveReload server is running on port 35729
+2019-08-06 22:03:33.503-| Starting ProtocolHandler ["http-nio-8080"]
+2019-08-06 22:03:33.531-| Tomcat started on port(s): 8080 (http) with context path ''
+2019-08-06 22:03:33.535-| Started Application in 3.249 seconds (JVM running for 5.436)
+2019-08-06 22:03:33.538-| 
+
+Error starting ApplicationContext. To display the conditions report re-run your application with 'debug' enabled.
+2019-08-06 22:03:33.558-| Shutting down ExecutorService 'taskScheduler'
+2019-08-06 22:03:33.559-| Shutting down ExecutorService 'applicationTaskExecutor'

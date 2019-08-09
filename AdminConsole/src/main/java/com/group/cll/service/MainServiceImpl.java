@@ -1,22 +1,15 @@
 package com.group.cll.service;
 
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-
-import org.springframework.stereotype.Service;
-
 import com.group.cll.constant.Constant;
 import com.group.cll.model.Account;
 import com.group.cll.model.Activity;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.springframework.stereotype.Service;
+
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.*;
 
 @Service
 public class MainServiceImpl {
@@ -48,7 +41,6 @@ public class MainServiceImpl {
 			returnAccount.setLuckNum4(account.getLuckNum4());
 			returnAccount.setPassword(account.getPassword());
 			returnAccount.setPeriodSeconds(account.getPeriodSeconds());
-			returnAccount.setSimulatorNums(account.getSimulatorNums());
 			returnAccount.setLucyWagerRecords(account.getLucyWagerRecords());
 			
 			// 爆分指标
@@ -88,8 +80,6 @@ public class MainServiceImpl {
 	
 	/**
 	 * 查找最优的lia
-	 * @param ruleName
-	 * @param candyIndex
 	 * @return
 	 */
 	public boolean matchRule(JSONObject ruleParams, Account account){
@@ -105,8 +95,6 @@ public class MainServiceImpl {
 	
 	/**
 	 * 查找最优的连消次数
-	 * @param ruleName
-	 * @param candyIndex
 	 * @return
 	 */
 	public String findEliminateCnt(JSONObject ruleParams, JSONArray eliminateCntRecords){
@@ -130,7 +118,6 @@ public class MainServiceImpl {
 	/**
 	 * 查找最优的幸运主单
 	 * @param ruleParams
-	 * @param account
 	 * @return
 	 */
 	public String findLucyWagerId(JSONObject ruleParams, JSONArray wagersRecords){

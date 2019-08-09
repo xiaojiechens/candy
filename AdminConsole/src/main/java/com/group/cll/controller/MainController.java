@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import org.openqa.selenium.By;
@@ -30,6 +29,20 @@ public class MainController {
 	
 	@Autowired
 	private MainServiceImpl candyService;
+
+	public static String getSuccessMessage(String message){
+		JSONObject successMessage = new JSONObject();
+		successMessage.put("success", true);
+		successMessage.put("msg", message);
+		return successMessage.toString();
+	}
+	
+	public static String getFailMessage(String message){
+		JSONObject failMessage = new JSONObject();
+		failMessage.put("success", false);
+		failMessage.put("msg", message);
+		return failMessage.toString();
+	}
 	
 	@RequestMapping(path = { "/getIndexes" })
 	public String getIndexes() throws IOException {
@@ -43,8 +56,6 @@ public class MainController {
 	
 	/**
 	    *    打开登录页面
-	 * @param domain
-	 * @param accountNo
 	 * @throws IOException
 	 */
 	@RequestMapping(path = { "/loginWebPage" })
@@ -71,7 +82,7 @@ public class MainController {
 	}
 
 	@RequestMapping(path = { "/openGameWindowUrlPage" })
-	public void openGameWindowUrlPage(Account account) throws IOException, InterruptedException {
+	public String openGameWindowUrlPage(Account account) throws IOException, InterruptedException {
 		String accountNoAndDomain = account.getAccountNo()+"@@"+account.getDomain();
 		account = Constant.accounts.get(account.getAccountNo()+"@@"+account.getDomain());
 		try {
@@ -107,7 +118,9 @@ public class MainController {
 			
 			Constant.webDrivers.get(accountNoAndDomain).get(account.getGameWindowUrl());
 		} catch(Exception e) {
+			return getFailMessage("请先打开游戏窗口!");
 		}
+		return null;
 	}
 
 	/**
@@ -121,40 +134,27 @@ public class MainController {
 		account = Constant.accounts.get(account.getAccountNo()+"@@"+account.getDomain());
 		JSONObject result = new JSONObject();
 		try {
-			if(sessionId == null || sessionId.equals("")) {
-				Map<String, String> cookies = readCookies(account.getAccountNo()+"@@"+account.getDomain());
+			Map<String, String> cookies = readCookies(account.getAccountNo()+"@@"+account.getDomain());
+
+			// 包含sessionId, 则调用模拟器开始游戏
+			if(cookies.containsKey("SESSION_ID")) {
+				sessionId = cookies.get("SESSION_ID");
+
+				Simulator simulator = new Simulator();
 				
-				// 包含sessionId, 则调用模拟器开始游戏
-				if(cookies.containsKey("SESSION_ID")) {
-					sessionId = cookies.get("SESSION_ID");
+				if(simulator.play(account, sessionId)){
+					account.getSimulators().put(simulator.toString(), simulator);
+					result.put("threadName", simulator.toString());
+					result.put("simulatorNum", account.getSimulators().size());
+					return result.toString();
 				}
+			} else {
+				return getFailMessage("请先获取session id!");
 			}
-			
-			int threadNum = account.getSimulatorNums() > 0 ? account.getSimulatorNums() : 3;
-			
-			JSONArray threadNames = new JSONArray();
-			
-			for(Entry<String,Simulator> simulatorEntry : account.getSimulators().entrySet()) {
-				try {
-					simulatorEntry.getValue().forceLogout();
-				} catch(Exception e) {
-				}
-			}
-			
-			for(int i = 0 ; i < threadNum; i++) {
-				String threadName = "candy_"+ i;
-				Simulator simulator = new Simulator(threadName);
-				
-				account.getSimulators().put(threadName, simulator);
-				simulator.play(account, sessionId);
-				threadNames.add(threadName);
-			}
-			result.put("threadNames", threadNames);
-			return result.toString();
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
-		return null;
+		return getFailMessage("开始游戏发生错误");
 	}
 	
 	/**
@@ -163,38 +163,42 @@ public class MainController {
 	 * @throws InterruptedException
 	 */
 	@RequestMapping(path = { "/stopGame" })
-	public void stopGame(Account account) throws IOException, InterruptedException {
-		account = Constant.accounts.get(account.getAccountNo()+"@@"+account.getDomain());
-		
-		for(Entry<String,Simulator> simulatorEntry : account.getSimulators().entrySet()) {
-			simulatorEntry.getValue().forceLogout();
+	public String stopGame(String domain, String accountNo, String threadName) throws IOException, InterruptedException {
+		Account account = Constant.accounts.get(accountNo+"@@"+domain);
+		try{
+			Simulator simulator = account.getSimulators().get(threadName);
+			account.getSimulators().remove(threadName);
+			simulator.forceLogout();
+		} catch (Exception e){
 		}
+		return getSuccessMessage("已关闭");
 	}
 	
 	@RequestMapping(path = { "/getMessage" })
-	public String getMessage(Account account) throws IOException, InterruptedException {
-		account = Constant.accounts.get(account.getAccountNo()+"@@"+account.getDomain());
+	public String getMessage(String domain, String accountNo, String threadName) throws IOException, InterruptedException {
+		Account account = Constant.accounts.get(accountNo+"@@"+domain);
 		
 		JSONObject result = new JSONObject();
-		
-		for(Entry<String,Simulator> simulatorEntry : account.getSimulators().entrySet()) {
+        Simulator simulator = account.getSimulators().get(threadName);
 
-			if(simulatorEntry.getValue().messages == null){
-				simulatorEntry.getValue().messages = new ArrayList<>();
-				simulatorEntry.getValue().messages.add("启动");
+        if(simulator != null){
+			if(simulator.messages == null){
+				simulator.messages = new ArrayList<>();
+				simulator.messages.add("启动");
 			}
 
-			result.put(simulatorEntry.getKey(), JSONArray.fromObject(simulatorEntry.getValue().messages));
-			simulatorEntry.getValue().messages.clear();
+			result.put("threadMessages", JSONArray.fromObject(simulator.messages));
+			simulator.messages.clear();
 		}
+
 		return result.toString();
 	}
 	
 	@RequestMapping(path = { "/openEliminateCntPage" })
-	public void openEliminateCntPage(Account account, String eliminateCntWagersIdAndNum) throws IOException {
+	public void openEliminateCntPage(String domain, String accountNo, String eliminateCntWagersIdAndNum) throws IOException {
 
-		account = Constant.accounts.get(account.getAccountNo()+"@@"+account.getDomain());
-		String accountNoAndDomain = account.getAccountNo()+"@@"+account.getDomain();
+		String accountNoAndDomain = accountNo+"@@"+domain;
+		Account account = Constant.accounts.get(accountNoAndDomain);
 		
 		Activity activity = account.getActivities().get("eliminateCnt");
 		
@@ -213,10 +217,10 @@ public class MainController {
 	}
 	
 	@RequestMapping(path = { "/openLucyWagerIdPage" })
-	public void openLucyWagerIdPage(Account account, String wagerId) throws IOException {
+	public void openLucyWagerIdPage(String domain, String accountNo, String lucyWagerId) throws IOException {
 		
-		account = Constant.accounts.get(account.getAccountNo()+"@@"+account.getDomain());
-		String accountNoAndDomain = account.getAccountNo()+"@@"+account.getDomain();
+		String accountNoAndDomain = accountNo+"@@"+domain;
+		Account account = Constant.accounts.get(accountNoAndDomain);
 		
 		Activity activity = account.getActivities().get("eliminateCnt");
 		
@@ -230,7 +234,7 @@ public class MainController {
 			Constant.webDrivers.get(accountNoAndDomain).get(activity.getUrl());
 		}
 		Constant.webDrivers.get(accountNoAndDomain).findElement(By.id("29_str1")).sendKeys(account.getAccountNo());
-		Constant.webDrivers.get(accountNoAndDomain).findElement(By.id("29_str2")).sendKeys(wagerId);
+		Constant.webDrivers.get(accountNoAndDomain).findElement(By.id("29_str2")).sendKeys(lucyWagerId);
 		Constant.webDrivers.get(accountNoAndDomain).findElement(By.id("29_str3")).sendKeys("BBin");
 		Constant.webDrivers.get(accountNoAndDomain).findElement(By.id("29_str4")).sendKeys("1");
 		
@@ -259,15 +263,18 @@ public class MainController {
 	
 	private Map<String, String> readCookies(String accountNoAndDomain) throws IOException {
 		
-		Set<Cookie> cookies = Constant.webDrivers.get(accountNoAndDomain).manage().getCookies();
-		
-		Map<String, String> cookieMap = new HashMap<>();
-		
-		for(Cookie cookie : cookies) {
-			System.out.println(cookie.getName()+"------------"+cookie.getValue());
-			cookieMap.put(cookie.getName(), cookie.getValue());
+		if(Constant.webDrivers.get(accountNoAndDomain) != null) {
+			Set<Cookie> cookies = Constant.webDrivers.get(accountNoAndDomain).manage().getCookies();
+			
+			Map<String, String> cookieMap = new HashMap<>();
+			
+			for(Cookie cookie : cookies) {
+				System.out.println(cookie.getName()+"------------"+cookie.getValue());
+				cookieMap.put(cookie.getName(), cookie.getValue());
+			}
+			return cookieMap;
+		} else {
+			return new HashMap<>();
 		}
-		
-		return cookieMap;
 	}
 }

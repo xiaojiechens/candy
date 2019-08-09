@@ -1,5 +1,6 @@
 package com.group.cll.model;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,9 +45,6 @@ public class Account implements Comparable<Account>{
 	/**发包时间*/
 	private int periodSeconds;
 
-	/**挂机数量*/
-	private int simulatorNums;
-
 	/**网站活动*/
 	private Map<String, Activity> activities;
 
@@ -68,19 +66,19 @@ public class Account implements Comparable<Account>{
 	private String lastFiveBombScore;
 
 	/**换分记录*/
-	private JSONArray exchangeRecords;
+	private JSONArray exchangeRecords = new JSONArray();
 
 	/**连消记录*/
-	private List<String> eliminateWagerIds;
+	private List<String> eliminateWagerIds = new ArrayList<>(); // e.g xxx:3
 	
 	/**连消记录*/
-	private JSONArray eliminateRecords;
+	private JSONArray eliminateRecords = new JSONArray();
 	
 	/**幸运注单记录*/
-	private List<String> lucyWagerIds;
+	private List<String> lucyWagerIds = new ArrayList<>();
 	
 	/**幸运注单记录*/
-	private JSONArray lucyWagerRecords;
+	private JSONArray lucyWagerRecords = new JSONArray();
 	
 	private Map<String, Simulator> simulators = new HashMap<String, Simulator>();
 
@@ -187,14 +185,6 @@ public class Account implements Comparable<Account>{
 		this.periodSeconds = periodSeconds;
 	}
 
-	public int getSimulatorNums() {
-		return simulatorNums;
-	}
-
-	public void setSimulatorNums(int simulatorNums) {
-		this.simulatorNums = simulatorNums;
-	}
-
 	public Map<String, Activity> getActivities() {
 		return activities;
 	}
@@ -288,7 +278,6 @@ public class Account implements Comparable<Account>{
 	}
 	
 	public String getJSONObjectString() {
-		
 		JSONObject accountObject = new JSONObject();
 		accountObject.put("accountNo", this.getAccountNo());
 		accountObject.put("domain", this.getDomain());
@@ -301,8 +290,7 @@ public class Account implements Comparable<Account>{
 		accountObject.put("luckNum4", this.getLuckNum4());
 		accountObject.put("leastEliminateCnt", this.getLeastEliminateCnt());
 		accountObject.put("periodSeconds", this.getPeriodSeconds());
-		accountObject.put("simulatorNums", this.getSimulatorNums());
-		
+
 		return accountObject.toString();
 	}
 }

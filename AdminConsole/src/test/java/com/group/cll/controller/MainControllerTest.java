@@ -44,8 +44,7 @@ public class MainControllerTest {
 		account.setLuckNum2("8888");
 		account.setLuckNum3("888");
 		account.setLuckNum4("88");
-		account.setSimulatorNums(3);
-		
+
 		System.out.println(startGame(account));
 		
 		BufferedReader reader = new BufferedReader( new InputStreamReader( System.in ) );
@@ -58,8 +57,6 @@ public class MainControllerTest {
 		JSONObject result = new JSONObject();
 		try {
 			
-			int threadNum = account.getSimulatorNums() > 0 ? account.getSimulatorNums() : 3;
-			
 			JSONArray threadNames = new JSONArray();
 			
 			for(Entry<String,Simulator> simulatorEntry : account.getSimulators().entrySet()) {
@@ -69,14 +66,10 @@ public class MainControllerTest {
 				}
 			}
 			
-			for(int i = 0 ; i < threadNum; i++) {
-				String threadName = "candy_"+ i;
-				Simulator simulator = new Simulator(threadName);
-				
-				account.getSimulators().put(threadName, simulator);
-				simulator.play(account, sessionId);
-				threadNames.add(threadName);
-			}
+			Simulator simulator = new Simulator();
+			account.getSimulators().put(simulator.toString(), simulator);
+			simulator.play(account, sessionId);
+			threadNames.add(simulator.toString());
 			result.put("threadNames", threadNames);
 			return result.toString();
 		} catch(Exception e) {

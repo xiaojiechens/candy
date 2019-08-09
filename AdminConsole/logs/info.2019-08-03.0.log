@@ -1,0 +1,142 @@
+2019-08-03 22:12:55.818-| Starting Application on lizi-PC with PID 3612 (C:\Users\lizi\git\CandyGame\AdminConsole\target\classes started by lizi in C:\Users\lizi\git\CandyGame\AdminConsole)
+2019-08-03 22:12:55.822-| The following profiles are active: dev
+2019-08-03 22:12:55.947-| Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2019-08-03 22:12:55.947-| For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2019-08-03 22:12:58.429-| Tomcat initialized with port(s): 8080 (http)
+2019-08-03 22:12:58.470-| Initializing ProtocolHandler ["http-nio-8080"]
+2019-08-03 22:12:58.494-| Starting service [Tomcat]
+2019-08-03 22:12:58.495-| Starting Servlet engine: [Apache Tomcat/9.0.21]
+2019-08-03 22:12:58.672-| Initializing Spring embedded WebApplicationContext
+2019-08-03 22:12:58.672-| Root WebApplicationContext: initialization completed in 2724 ms
+2019-08-03 22:12:59.148-| Initializing ExecutorService 'applicationTaskExecutor'
+2019-08-03 22:12:59.270-| Shutting down ExecutorService 'applicationTaskExecutor'
+2019-08-03 22:12:59.277-| Stopping service [Tomcat]
+2019-08-03 22:12:59.298-| 
+
+Error starting ApplicationContext. To display the conditions report re-run your application with 'debug' enabled.
+2019-08-03 22:16:16.268-| Starting Application on lizi-PC with PID 7416 (C:\Users\lizi\git\CandyGame\AdminConsole\target\classes started by lizi in C:\Users\lizi\git\CandyGame\AdminConsole)
+2019-08-03 22:16:16.272-| The following profiles are active: dev
+2019-08-03 22:16:16.362-| Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2019-08-03 22:16:16.362-| For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2019-08-03 22:16:18.802-| Tomcat initialized with port(s): 8080 (http)
+2019-08-03 22:16:18.836-| Initializing ProtocolHandler ["http-nio-8080"]
+2019-08-03 22:16:18.859-| Starting service [Tomcat]
+2019-08-03 22:16:18.860-| Starting Servlet engine: [Apache Tomcat/9.0.21]
+2019-08-03 22:16:19.036-| Initializing Spring embedded WebApplicationContext
+2019-08-03 22:16:19.037-| Root WebApplicationContext: initialization completed in 2675 ms
+2019-08-03 22:16:19.454-| Initializing ExecutorService 'applicationTaskExecutor'
+2019-08-03 22:16:19.780-| Adding welcome page: class path resource [static/index.html]
+2019-08-03 22:16:19.852-| Initializing ExecutorService 'taskScheduler'
+2019-08-03 22:16:23.276-| LiveReload server is running on port 35729
+2019-08-03 22:16:23.320-| Starting ProtocolHandler ["http-nio-8080"]
+2019-08-03 22:16:23.368-| Tomcat started on port(s): 8080 (http) with context path ''
+2019-08-03 22:16:23.372-| Started Application in 7.929 seconds (JVM running for 8.605)
+2019-08-03 22:16:23.561-| Initializing Spring DispatcherServlet 'dispatcherServlet'
+2019-08-03 22:16:23.562-| Initializing Servlet 'dispatcherServlet'
+2019-08-03 22:16:23.586-| Completed initialization in 24 ms
+2019-08-03 22:16:27.312-| Detected dialect: W3C
+2019-08-03 22:18:47.886-| Starting Application on lizi-PC with PID 8384 (C:\Users\lizi\git\CandyGame\AdminConsole\target\classes started by lizi in C:\Users\lizi\git\CandyGame\AdminConsole)
+2019-08-03 22:18:47.894-| The following profiles are active: dev
+2019-08-03 22:18:48.072-| Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2019-08-03 22:18:48.072-| For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2019-08-03 22:18:51.502-| Tomcat initialized with port(s): 8080 (http)
+2019-08-03 22:18:51.564-| Initializing ProtocolHandler ["http-nio-8080"]
+2019-08-03 22:18:51.588-| Starting service [Tomcat]
+2019-08-03 22:18:51.589-| Starting Servlet engine: [Apache Tomcat/9.0.21]
+2019-08-03 22:18:51.867-| Initializing Spring embedded WebApplicationContext
+2019-08-03 22:18:51.867-| Root WebApplicationContext: initialization completed in 3794 ms
+2019-08-03 22:18:52.790-| Initializing ExecutorService 'applicationTaskExecutor'
+2019-08-03 22:18:53.045-| Adding welcome page: class path resource [static/index.html]
+2019-08-03 22:18:53.138-| Initializing ExecutorService 'taskScheduler'
+2019-08-03 22:18:56.654-| LiveReload server is running on port 35729
+2019-08-03 22:18:56.723-| Starting ProtocolHandler ["http-nio-8080"]
+2019-08-03 22:18:56.832-| Tomcat started on port(s): 8080 (http) with context path ''
+2019-08-03 22:18:56.842-| Started Application in 11.636 seconds (JVM running for 13.454)
+2019-08-03 22:18:56.974-| Initializing Spring DispatcherServlet 'dispatcherServlet'
+2019-08-03 22:18:56.975-| Initializing Servlet 'dispatcherServlet'
+2019-08-03 22:18:57.024-| Completed initialization in 49 ms
+2019-08-03 22:19:01.576-| Detected dialect: W3C
+2019-08-03 22:23:15.947-| Starting Application on lizi-PC with PID 8636 (C:\Users\lizi\git\CandyGame\AdminConsole\target\classes started by lizi in C:\Users\lizi\git\CandyGame\AdminConsole)
+2019-08-03 22:23:15.955-| The following profiles are active: dev
+2019-08-03 22:23:16.136-| Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2019-08-03 22:23:16.136-| For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2019-08-03 22:23:19.799-| Tomcat initialized with port(s): 8080 (http)
+2019-08-03 22:23:19.842-| Initializing ProtocolHandler ["http-nio-8080"]
+2019-08-03 22:23:19.861-| Starting service [Tomcat]
+2019-08-03 22:23:19.862-| Starting Servlet engine: [Apache Tomcat/9.0.21]
+2019-08-03 22:23:20.117-| Initializing Spring embedded WebApplicationContext
+2019-08-03 22:23:20.117-| Root WebApplicationContext: initialization completed in 3981 ms
+2019-08-03 22:23:20.965-| Initializing ExecutorService 'applicationTaskExecutor'
+2019-08-03 22:23:21.233-| Adding welcome page: class path resource [static/index.html]
+2019-08-03 22:23:21.330-| Initializing ExecutorService 'taskScheduler'
+2019-08-03 22:23:24.748-| LiveReload server is running on port 35729
+2019-08-03 22:23:24.834-| Starting ProtocolHandler ["http-nio-8080"]
+2019-08-03 22:23:24.953-| Tomcat started on port(s): 8080 (http) with context path ''
+2019-08-03 22:23:24.962-| Started Application in 11.397 seconds (JVM running for 13.152)
+2019-08-03 22:23:29.072-| Detected dialect: W3C
+2019-08-03 22:23:29.312-| Initializing Spring DispatcherServlet 'dispatcherServlet'
+2019-08-03 22:23:29.312-| Initializing Servlet 'dispatcherServlet'
+2019-08-03 22:23:29.330-| Completed initialization in 17 ms
+2019-08-03 22:27:11.913-| Starting Application on lizi-PC with PID 116 (C:\Users\lizi\git\CandyGame\AdminConsole\target\classes started by lizi in C:\Users\lizi\git\CandyGame\AdminConsole)
+2019-08-03 22:27:11.920-| The following profiles are active: dev
+2019-08-03 22:27:12.177-| Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2019-08-03 22:27:12.178-| For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2019-08-03 22:27:15.267-| Tomcat initialized with port(s): 8080 (http)
+2019-08-03 22:27:15.313-| Initializing ProtocolHandler ["http-nio-8080"]
+2019-08-03 22:27:15.335-| Starting service [Tomcat]
+2019-08-03 22:27:15.335-| Starting Servlet engine: [Apache Tomcat/9.0.21]
+2019-08-03 22:27:15.619-| Initializing Spring embedded WebApplicationContext
+2019-08-03 22:27:15.620-| Root WebApplicationContext: initialization completed in 3442 ms
+2019-08-03 22:27:16.470-| Initializing ExecutorService 'applicationTaskExecutor'
+2019-08-03 22:27:16.779-| Adding welcome page: class path resource [static/index.html]
+2019-08-03 22:27:16.882-| Initializing ExecutorService 'taskScheduler'
+2019-08-03 22:27:20.322-| LiveReload server is running on port 35729
+2019-08-03 22:27:20.402-| Starting ProtocolHandler ["http-nio-8080"]
+2019-08-03 22:27:20.525-| Tomcat started on port(s): 8080 (http) with context path ''
+2019-08-03 22:27:20.537-| Started Application in 10.32 seconds (JVM running for 11.745)
+2019-08-03 22:27:25.037-| Detected dialect: W3C
+2019-08-03 22:27:25.296-| Initializing Spring DispatcherServlet 'dispatcherServlet'
+2019-08-03 22:27:25.297-| Initializing Servlet 'dispatcherServlet'
+2019-08-03 22:27:25.326-| Completed initialization in 29 ms
+2019-08-03 22:29:11.463-| Starting Application on lizi-PC with PID 2516 (C:\Users\lizi\git\CandyGame\AdminConsole\target\classes started by lizi in C:\Users\lizi\git\CandyGame\AdminConsole)
+2019-08-03 22:29:11.472-| The following profiles are active: dev
+2019-08-03 22:29:11.790-| Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2019-08-03 22:29:11.791-| For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2019-08-03 22:29:14.938-| Tomcat initialized with port(s): 8080 (http)
+2019-08-03 22:29:14.982-| Initializing ProtocolHandler ["http-nio-8080"]
+2019-08-03 22:29:15.008-| Starting service [Tomcat]
+2019-08-03 22:29:15.009-| Starting Servlet engine: [Apache Tomcat/9.0.21]
+2019-08-03 22:29:15.274-| Initializing Spring embedded WebApplicationContext
+2019-08-03 22:29:15.275-| Root WebApplicationContext: initialization completed in 3484 ms
+2019-08-03 22:29:16.192-| Initializing ExecutorService 'applicationTaskExecutor'
+2019-08-03 22:29:16.463-| Adding welcome page: class path resource [static/index.html]
+2019-08-03 22:29:16.557-| Initializing ExecutorService 'taskScheduler'
+2019-08-03 22:29:20.002-| LiveReload server is running on port 35729
+2019-08-03 22:29:20.105-| Starting ProtocolHandler ["http-nio-8080"]
+2019-08-03 22:29:20.206-| Tomcat started on port(s): 8080 (http) with context path ''
+2019-08-03 22:29:20.213-| Started Application in 10.383 seconds (JVM running for 11.85)
+2019-08-03 22:29:24.517-| Detected dialect: W3C
+2019-08-03 22:29:24.755-| Initializing Spring DispatcherServlet 'dispatcherServlet'
+2019-08-03 22:29:24.756-| Initializing Servlet 'dispatcherServlet'
+2019-08-03 22:29:24.771-| Completed initialization in 15 ms
+2019-08-03 22:32:17.276-| Starting Application on lizi-PC with PID 1976 (C:\Users\lizi\git\CandyGame\AdminConsole\target\classes started by lizi in C:\Users\lizi\git\CandyGame\AdminConsole)
+2019-08-03 22:32:17.420-| The following profiles are active: dev
+2019-08-03 22:32:17.581-| Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2019-08-03 22:32:17.582-| For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2019-08-03 22:32:20.782-| Tomcat initialized with port(s): 8080 (http)
+2019-08-03 22:32:20.830-| Initializing ProtocolHandler ["http-nio-8080"]
+2019-08-03 22:32:20.853-| Starting service [Tomcat]
+2019-08-03 22:32:20.853-| Starting Servlet engine: [Apache Tomcat/9.0.21]
+2019-08-03 22:32:21.190-| Initializing Spring embedded WebApplicationContext
+2019-08-03 22:32:21.191-| Root WebApplicationContext: initialization completed in 3609 ms
+2019-08-03 22:32:22.035-| Initializing ExecutorService 'applicationTaskExecutor'
+2019-08-03 22:32:22.346-| Adding welcome page: class path resource [static/index.html]
+2019-08-03 22:32:22.444-| Initializing ExecutorService 'taskScheduler'
+2019-08-03 22:32:25.915-| LiveReload server is running on port 35729
+2019-08-03 22:32:26.004-| Starting ProtocolHandler ["http-nio-8080"]
+2019-08-03 22:32:26.120-| Tomcat started on port(s): 8080 (http) with context path ''
+2019-08-03 22:32:26.143-| Started Application in 10.643 seconds (JVM running for 12.142)
+2019-08-03 22:32:26.450-| Initializing Spring DispatcherServlet 'dispatcherServlet'
+2019-08-03 22:32:26.451-| Initializing Servlet 'dispatcherServlet'
+2019-08-03 22:32:26.577-| Completed initialization in 126 ms
+2019-08-03 22:32:30.613-| Detected dialect: W3C

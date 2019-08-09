@@ -47,13 +47,14 @@ function ajaxOpenWebPage(domain, accountNo) {
     });
 }
 
-function ajaxOpenEliminateCntPage(domain, accountNo) {
+function ajaxOpenEliminateCntPage(domain, accountNo, eliminateCntWagersIdAndNum) {
     Ext.Ajax.request({
         url: "./openEliminateCntPage",
         contentType: 'application/json;charset=UTF-8',
         params: {
             domain: domain,
             accountNo: accountNo,
+            eliminateCntWagersIdAndNum: eliminateCntWagersIdAndNum
         },
         method: 'POST',
         success: function (response, options) {
@@ -61,13 +62,14 @@ function ajaxOpenEliminateCntPage(domain, accountNo) {
     });
 }
 
-function ajaxOpenLucyWagerIdPage(domain, accountNo) {
+function ajaxOpenLucyWagerIdPage(domain, accountNo, lucyWagerId) {
     Ext.Ajax.request({
         url: "./openLucyWagerIdPage",
         contentType: 'application/json;charset=UTF-8',
         params: {
             domain: domain,
             accountNo: accountNo,
+            lucyWagerId: lucyWagerId,
         },
         method: 'POST',
         success: function (response, options) {
@@ -113,51 +115,51 @@ function ajaxStartGame(domain, accountNo) {
         },
         method: 'POST',
         success: function (response, options) {
-        	if(!response.responseText){
-        		return;
-        	}
-        	// {"threadNames":["candy_0","candy_1","candy_2"]}
-        	var o_response = Ext.util.JSON.decode(response.responseText);
-
-            var items = [];
-            for(var i in o_response.threadNames){
-                items.push({
+            if(!Ext.util.JSON.decode(response.responseText)){
+                return;
+            }
+            var threadName = Ext.util.JSON.decode(response.responseText).threadName;
+            var simulatorNum = Ext.util.JSON.decode(response.responseText).simulatorNum;
+            var idName = threadName.replace(/\./g,"").replace(/@/g,"");
+            Ext.create('Ext.window.Window', {
+                title: simulatorNum+"_"+domain,
+                layout: 'column',
+                id: idName+'win',
+                x: 100 + (simulatorNum - 1) * 300,
+                width: 300,
+                height: 500,
+                autoHeight : true,//自动高度以下参数用于Panel的各个部位工具栏
+                items: [{
                     autoScroll : true,// 自动卷轴
                     scrollable : true,
                     frame:true,//渲染框架
                     border : true,//边框
                     split : true,// 分割条面板组合是经常用到
-                    height : 600,//自动高度以下参数用于Panel的各个部位工具栏
-                    title: o_response.threadNames[i],
-                    id: o_response.threadNames[i],
+                    height : 500,//自动高度以下参数用于Panel的各个部位工具栏
+                    id : idName,
                     text: '',
-                    columnWidth: 1/o_response.threadNames.length,
-                    html: ''
-                });
-            }
-
-            var newWin = Ext.create('Ext.window.Window', {
-                title: '监控窗口',
-                layout: 'column',
-                width: 800,
-                height: 600,
-                autoHeight : true,//自动高度以下参数用于Panel的各个部位工具栏
-                items: items,
-            });
-
-            ajaxGetMessage(domain, accountNo, o_response.threadNames);
-            newWin.show();
+                    columnWidth: 1,
+                    html: '',
+                }],
+                listeners : {
+                    'close':function(){
+                        ajaxStopGame(domain, accountNo, threadName);
+                    }
+                }
+            }).show();
+            ajaxGetMessage(domain, accountNo, threadName, idName);
         }
     });
 }
 
-function ajaxStopGame(domain, accountNo) {
+function ajaxStopGame(domain, accountNo, threadName) {
 	Ext.Ajax.request({
 		url: "./stopGame",
 		contentType: 'application/json;charset=UTF-8',
         params: {
         	domain: domain,
-        	accountNo: accountNo
+        	accountNo: accountNo,
+            threadName: threadName,
         },
 		method: 'POST',
 		success: function (response, options) {
@@ -165,49 +167,45 @@ function ajaxStopGame(domain, accountNo) {
 	});
 }
 
-function ajaxGetMessage(domain, accountNo, threadNames) {
+function ajaxGetMessage(domain, accountNo, threadName, idName) {
     var that = this;
 	Ext.Ajax.request({
 		url: "./getMessage",
 		contentType: 'application/json;charset=UTF-8',
 		params: {
 			domain: domain,
-			accountNo: accountNo
+			accountNo: accountNo,
+            threadName: threadName
 		},
 		method: 'POST',
 		success: function (response, options) {
-            // e.g {"candy_2":["启动"],"candy_0":["启动"],"candy_1":["启动"]}
-            var threadMessages = Ext.util.JSON.decode(response.responseText);
-
-            for(var i in threadNames){
-                var messages = threadMessages[threadNames[i]];
-                var text = "";
-                for(var j in messages){
-                    text = text + messages[j] + "<br>" ;
-                }
-                if(Ext.getCmp(threadNames[i]).text.length > 2000){
-                	Ext.getCmp(threadNames[i]).body.update(text);
-                	Ext.getCmp(threadNames[i]).text = text;
-                } else{
-                	Ext.getCmp(threadNames[i]).body.update(Ext.getCmp(threadNames[i]).text + text);
-                	Ext.getCmp(threadNames[i]).text = Ext.getCmp(threadNames[i]).text + text;
-                }
-                
-                Ext.getCmp(threadNames[i]).scrollBy(0,1);//滚动条向下移动一个像素
+            // e.g {"threadMessages":["启动"]}
+            var threadMessages = Ext.util.JSON.decode(response.responseText).threadMessages;
+            var text = "";
+            for(var i in threadMessages){
+                text = text + threadMessages[i] + "<br>" ;
             }
+            if(Ext.getCmp(idName).text.length > 500){
+                Ext.getCmp(idName).body.update(text);
+                Ext.getCmp(idName).text = text;
+            } else{
+                Ext.getCmp(idName).body.update(Ext.getCmp(idName).text + text);
+                Ext.getCmp(idName).text = Ext.getCmp(idName).text + text;
+            }
+
             if (!that.messageRunner) {
                 that.messageRunner = {};
                 that.onMessageTaskRunner = {};
-                if (!that.messageRunner[accountNo+"_"+domain]) {
-                    that.messageRunner[accountNo+"_"+domain] = new Ext.util.TaskRunner();
-                    that.onMessageTaskRunner[accountNo+"_"+domain] = that.messageRunner[accountNo+"_"+domain].start({
-                        run: function () {
-                            ajaxGetMessage(domain, accountNo, threadNames);
-                        },
-                        interval: 1000
-                    });
-                    that.messageRunner[accountNo+"_"+domain].start(that.onMessageTaskRunner[accountNo+"_"+domain]);
-                }
+            }
+            if (!that.messageRunner[accountNo+"_"+domain+"_"+idName]) {
+                that.messageRunner[accountNo+"_"+domain+"_"+idName] = new Ext.util.TaskRunner();
+                that.onMessageTaskRunner[accountNo+"_"+domain+"_"+idName] = that.messageRunner[accountNo+"_"+domain+"_"+idName].start({
+                    run: function () {
+                        ajaxGetMessage(domain, accountNo, threadName, idName);
+                    },
+                    interval: 1000
+                });
+                that.messageRunner[accountNo+"_"+domain+"_"+idName].start(that.onMessageTaskRunner[accountNo+"_"+domain+"_"+idName]);
             }
 		}
 	});
@@ -236,8 +234,8 @@ Ext.override(Ext.form.field.Base,{
             {name: 'domain', type: 'string', convert: null},
             {name: 'balance', type: 'float', convert: null},
             {name: 'amount', type: 'float', convert: null},
-            {name: 'maxEliminateCntWagersIdAndNum', type: 'int', convert: null},
-            {name: 'luckiestWagersIds', type: 'string', convert: null},
+            {name: 'eliminateWagerIds', type: 'int', convert: null},
+            {name: 'lucyWagerIds', type: 'string', convert: null},
             {name: 'betNumber', type: 'int', convert: null},
             {name: 'bombIndex', type: 'string', convert: null},
             {name: 'lastFiveBombScore', type: 'string', convert: null},
@@ -283,20 +281,34 @@ Ext.override(Ext.form.field.Base,{
             }, {
                 dataIndex: 'amount', flex: 0.5, header: '换分总额', align: "right", field: {xtype: 'textfield'}
             }, {
-                dataIndex: 'maxEliminateCntWagersIdAndNum', flex: 0.8, header: '连消次数', align: "right", field: {xtype: 'numberfield'},
+                dataIndex: 'eliminateWagerIds', flex: 0.8, header: '连消次数', align: "right", field: {xtype: 'numberfield'},
                 renderer: function (value, cellmeta, record, rowIndex, columnIndex, store) {
                     var domain = record.data["domain"];
                     var accountNo = record.data["accountNo"];
-                    var eliminateCnt = record.data["eliminateCnt"];
-                    return '<a title="' + value + '" href="javascript:void(0)" onclick="ajaxOpenEliminateCntPage(\'' + domain + '\',\'' + accountNo + '\',\'' + eliminateCnt + '\')" target="_blank">' + value + '</a>';
+                    var eliminateCnt = record.data["eliminateWagerIds"];
+                    var returnMsg = '';
+                    
+                    for(var i in eliminateCnt){
+                    	returnMsg = returnMsg + '<br/><a title="' + eliminateCnt[i] + '" href="javascript:void(0)" onclick="ajaxOpenEliminateCntPage(\'' + domain + '\',\'' + accountNo + '\',\'' + eliminateCnt[i] + '\')" target="_blank">' + eliminateCnt[i] + '</a>';
+                    }
+                    
+                    return returnMsg;
                 }
             }, {
-                dataIndex: 'luckiestWagersIds', flex: 0.8, header: '幸运注单', align: "right", field: {xtype: 'numberfield'},
+                dataIndex: 'lucyWagerIds', flex: 0.8, header: '幸运注单', align: "right", field: {xtype: 'numberfield'},
                 renderer: function (value, cellmeta, record, rowIndex, columnIndex, store) {
                     var domain = record.data["domain"];
                     var accountNo = record.data["accountNo"];
-                    var wagersId = record.data["wagersId"];
-                    return '<a title="' + value + '" href="javascript:void(0)" onclick="ajaxOpenLucyWagerIdPage(\'' + domain + '\',\'' + accountNo + '\',\'' + wagersId + '\')" target="_blank">' + value + '</a>';
+                    var lucyWagerIds = record.data["lucyWagerIds"];
+                    
+                    var returnMsg = '';
+                    
+                    for(var i in lucyWagerIds){
+                    	returnMsg = returnMsg + '<a title="' + lucyWagerIds[i] + '" href="javascript:void(0)" onclick="ajaxOpenLucyWagerIdPage(\'' + domain + '\',\'' + accountNo + '\',\'' + lucyWagerIds[i] + '\')" target="_blank">' + value + '</a>';
+                    }
+                    
+                    return returnMsg;
+                
                 }
             }, {
                 dataIndex: 'betNumber', flex: 0.5, header: '打码总数', align: "right", field: {xtype: 'numberfield'},
@@ -334,18 +346,6 @@ Ext.override(Ext.form.field.Base,{
                         ajaxStartGame(domain, accountNo);
                     }
                 }]
-            }, {
-                header: '停止挂机', flex: 0.5, xtype: 'actioncolumn', align: "center",
-                items: [{
-                    tooltip: '停止挂机',
-                    icon: "resources/icons/main-shutdown.png",
-                    handler: function (grid, rowIndex, colIndex) {
-                        var record = grid.getStore().getAt(rowIndex);
-                        var domain = record.data["domain"];
-                        var accountNo = record.data["accountNo"];
-                        ajaxStopGame(domain, accountNo);
-                    }
-                }]
             }],
             store: store,
             viewConfig: {
@@ -379,7 +379,6 @@ Ext.override(Ext.form.field.Base,{
 				    		Ext.getCmp('password').setValue(o_response.password);
 				    		Ext.getCmp('leastEliminateCnt').setValue(o_response.leastEliminateCnt);
 				    		Ext.getCmp('periodSeconds').setValue(o_response.periodSeconds);
-				    		Ext.getCmp('simulatorNums').setValue(o_response.simulatorNums);
                         }
                     });
 				}
@@ -421,7 +420,7 @@ Ext.override(Ext.form.field.Base,{
                 layout: 'column',
                 items: [{
                     xtype: 'textfield',
-                    columnWidth: 0.2,
+                    columnWidth: 0.15,
                     allowBlank: false,
                     labelAlign: 'right',
                     fieldLabel: '局号保留',
@@ -429,7 +428,7 @@ Ext.override(Ext.form.field.Base,{
                     id: 'luckNum1'
                 },{
                     xtype: 'textfield',
-                    columnWidth: 0.2,
+                    columnWidth: 0.15,
                     allowBlank: false,
                     labelAlign: 'right',
                     fieldLabel: '-',
@@ -437,7 +436,7 @@ Ext.override(Ext.form.field.Base,{
                     id: 'luckNum2'
                 },{
                     xtype: 'textfield',
-                    columnWidth: 0.2,
+                    columnWidth: 0.15,
                     allowBlank: false,
                     labelAlign: 'right',
                     fieldLabel: '-',
@@ -445,7 +444,7 @@ Ext.override(Ext.form.field.Base,{
                     id: 'luckNum3'
                 },{
                     xtype: 'textfield',
-                    columnWidth: 0.2,
+                    columnWidth: 0.15,
                     allowBlank: false,
                     labelAlign: 'right',
                     fieldLabel: '-',
@@ -467,19 +466,11 @@ Ext.override(Ext.form.field.Base,{
                 }, {
                     xtype: 'textfield',
                     columnWidth: 0.3,
-                    allowBlank: false,
+                    allowBlank: true,
                     labelAlign: 'right',
                     fieldLabel: '密码',
                     name: 'password',
                     id: 'password'
-                }, {
-                    xtype: 'textfield',
-                    columnWidth: 0.3,
-                    allowBlank: false,
-                    labelAlign: 'right',
-                    fieldLabel: '连消',
-                    name: 'leastEliminateCnt',
-                    id: 'leastEliminateCnt'
                 }]
             }, {
                 columnWidth: 1.0,
@@ -497,9 +488,9 @@ Ext.override(Ext.form.field.Base,{
                     columnWidth: 0.3,
                     allowBlank: false,
                     labelAlign: 'right',
-                    fieldLabel: '挂机数量',
-                    name: 'simulatorNums',
-                    id: 'simulatorNums'
+                    fieldLabel: '连消',
+                    name: 'leastEliminateCnt',
+                    id: 'leastEliminateCnt'
                 }]
             }],
             tbar: [
@@ -517,7 +508,6 @@ Ext.override(Ext.form.field.Base,{
                     	var password = Ext.getCmp('password').getValue();
                     	var leastEliminateCnt = Ext.getCmp('leastEliminateCnt').getValue();
                     	var periodSeconds = Ext.getCmp('periodSeconds').getValue();
-                    	var simulatorNums = Ext.getCmp('simulatorNums').getValue();
 
                         Ext.Ajax.request({
                             url: "./saveOrUpdateAccount",
@@ -533,7 +523,6 @@ Ext.override(Ext.form.field.Base,{
                             	password: password,
                             	leastEliminateCnt: leastEliminateCnt,
                             	periodSeconds: periodSeconds,
-                            	simulatorNums: simulatorNums,
                             },
                             method: 'POST',
                             success: function (response, options) {
@@ -573,7 +562,6 @@ Ext.override(Ext.form.field.Base,{
     				    		Ext.getCmp('password').setValue("");
     				    		Ext.getCmp('leastEliminateCnt').setValue("");
     				    		Ext.getCmp('periodSeconds').setValue("");
-    				    		Ext.getCmp('simulatorNums').setValue("");
 
         				    	Ext.MessageBox.show({
      					           title: '提示',

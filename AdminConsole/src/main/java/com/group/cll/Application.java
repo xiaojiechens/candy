@@ -15,7 +15,7 @@ public class Application {
 		SpringApplication.run(Application.class, args);
 
 		// 如果不设置将搜索环境变量
-		System.setProperty("webdriver.chrome.driver", "chromedriver");
+		System.setProperty("webdriver.chrome.driver", "./chromedriver.exe");
 		WebDriver localDriver = new ChromeDriver();
 		localDriver.get("http://localhost:8080/");
 	}

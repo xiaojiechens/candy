@@ -1,12 +1,18 @@
 package com.group.cll.action;
 
+import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.websocket.ClientEndpoint;
 import javax.websocket.ContainerProvider;
@@ -30,11 +36,6 @@ public class Simulator {
 	/**
 	 * 连消次数达到三次，投注2块二次
 	 */
-	/**
-	 * 局号金额，连消次数
-	 * 返回第一关换分
-	 */
-	
 	private static final Logger logger = LoggerFactory.getLogger(Simulator.class);
 
 	public static Map<String, Simulator> session2Simulator = new HashMap<>();
@@ -59,12 +60,17 @@ public class Simulator {
 		// 点击结算离开(前置动作getMachineDetail)
 		requestActions.put("balanceExchange", "{\"action\":\"balanceExchange\"}");
 		
-		// 下注，// 每下注一次记录bet_number-打码数，并写入文件
+		// 下注10分
 		requestActions.put("beginGame2", "{\"action\":\"beginGame2\",\"line\":\"1\",\"lineBet\":10}");
+		
+		// 下注20分
+		requestActions.put("beginGame2_20", "{\"action\":\"beginGame2\",\"line\":\"1\",\"lineBet\":20}");
 		
 		// 完全退出(前置动作balanceExchange)
 		requestActions.put("leaveMachine", "{\"action\":\"leaveMachine\"}");
 	}
+	
+	public static Lock lock = new ReentrantLock();
 	
 	public List<String> messages;
 	
@@ -77,21 +83,44 @@ public class Simulator {
 	
 	public Account account;
 	
+	public int lineBetCount = 0;
+	
 	/** 模块名称*/
 	private ActionSet actionSet = ActionSet.LOGIN;
 
-	private int gridNum = 0;// 拐棍个数
-	
+	private int stickNum = 0;// 拐棍个数
+	private int betNum = 0;// 打码总数
+
 	public Simulator() {
 		super();
-	}
-	
-	public Simulator(String threadName) {
-		super();
-		this.threadName = threadName;
+		this.threadName = this.toString();
 	}
 
-	public void play(Account account, String sessionId) {
+	public static void write(String fileName, String content) {
+		lock.lock();
+		
+		BufferedWriter out = null;
+		try {
+			out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileName, true)));
+			out.write(content);
+			out.newLine();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			if(out != null) {
+				try {
+					out.close();
+				} catch (IOException e) {
+				}
+			}
+		}
+		lock.unlock();
+	}
+	
+	public boolean play(Account account, String sessionId) {
+		
 		this.account = account;
 		this.sessionId = sessionId;
 		messages = new ArrayList<String>();
@@ -100,9 +129,11 @@ public class Simulator {
 			this.session = container.connectToServer(Simulator.class,  new URI( "wss://homelaohuji.com/fxCasino/fxLB?gameType=5902" ));	// 该方法会阻塞
 			
 			session2Simulator.put(this.session.toString(), this);
-		
+
+			return true;
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			e.printStackTrace();
+			return false;
 		}
 	}
 	
@@ -120,6 +151,11 @@ public class Simulator {
 	
 	@OnClose
 	public void onClose(){
+		try {
+			this.session.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	@OnError
@@ -147,6 +183,24 @@ public class Simulator {
 		
 		if(this.session == null) {
 			this.session = session;
+		}
+		
+		if(session2Simulator.get(this.session.toString()) != null) {
+			if(this.account == null) {
+				this.account = session2Simulator.get(this.session.toString()).account;
+			}
+			
+			if(this.threadName == null) {
+				this.threadName = session2Simulator.get(this.session.toString()).threadName;
+			}
+			
+			if(this.sessionId == null) {
+				this.sessionId = session2Simulator.get(this.session.toString()).sessionId;
+			}
+			
+			if(this.messages == null) {
+				this.messages = session2Simulator.get(this.session.toString()).messages;
+			}
 		}
 		
 		JSONObject response = JSONObject.fromObject(message);
@@ -215,7 +269,7 @@ public class Simulator {
 					e.printStackTrace();
 				}
 				session2Simulator.get(this.session.toString()).sendMessage(requestActions.get("loginBySid").replace("#{sessionId}", session2Simulator.get(this.session.toString()).sessionId));
-				return;
+				return;	
 			case onTakeMachine:
 				try {
 					Thread.sleep(1);
@@ -294,7 +348,6 @@ public class Simulator {
 	
 	// 强制退出
 	public void forceLogout() {
-		session2Simulator.get(this.session.toString()).sendMessage(requestActions.get("leaveMachine"));
 		// 关闭websocket
 		onClose();
 	}
@@ -315,6 +368,9 @@ public class Simulator {
 				session2Simulator.get(this.session.toString()).sendMessage(requestActions.get("balanceExchange"));
 				return;
 			case onBalanceExchange:// 确定回到第一关以后
+				outputWagerInfo("回到第一关");
+				outputWagerInfo("结算--账户余额："+result.getJSONObject("data").getDouble("Balance") +"--兑换分数：" +result.getJSONObject("data").getString("TransCredit"));
+				recordExchangeInfo(result);
 				session2Simulator.get(this.session.toString()).sendMessage(requestActions.get("creditExchange"));
 				return;
 			case onCreditExchange:// 确定回到第一关以后
@@ -323,6 +379,10 @@ public class Simulator {
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
+                session2Simulator.get(this.session.toString()).account.setBalance(result.getJSONObject("data").getDouble("Balance"));
+                session2Simulator.get(this.session.toString()).account.setAmount(Integer.parseInt(result.getJSONObject("data").getString("Credit")));
+
+				outputWagerInfo("换分--账户余额："+result.getJSONObject("data").getDouble("Balance") +"--兑换分数：" +result.getJSONObject("data").getString("Credit"));
 				actionSet = ActionSet.GAMING;
 				session2Simulator.get(this.session.toString()).sendMessage(requestActions.get("beginGame2"));
 				return;
@@ -371,22 +431,27 @@ public class Simulator {
 				
 				int elementID = data.getJSONArray("Lines").getJSONArray(i).getJSONObject(j).getInt("ElementID");
 				if(elementID == 6) {// 拐棍
-					gridNum++;
+					stickNum++;
 				}
 			}
 		}
 
 		int freeTime = data.getInt("FreeTime");
 		
+		int eliminateCnt = 0;
+		
 		// 免费游戏则直接返回
 		if(freeTime > 0) {
 			logger.info(session2Simulator.get(this.session.toString()).threadName+"免费游戏中："+freeTime);
+			outputWagerInfo("免费游戏，第" + freeTime + "次") ;
 		} else {
+			betNum++;
+			session2Simulator.get(this.session.toString()).account.setBetNumber(betNum);
 			// 拐棍个数大于等于15, 则返回第一关
-			logger.info(session2Simulator.get(this.session.toString()).threadName+"拐棍个数："+gridNum);
-			if(gridNum >= 15) {
+			logger.info(session2Simulator.get(this.session.toString()).threadName+"拐棍个数："+stickNum);
+			if(stickNum >= 15) {
 				logger.info(session2Simulator.get(this.session.toString()).threadName+"返回第一关");
-				gridNum = 0;
+				stickNum = 0;
 				backFirstLevel(ResponseAction.onBackFirstLevel, null);
 				return;
 			}
@@ -402,7 +467,10 @@ public class Simulator {
 			// 统计幸运局号(注单)号码
 			for(int i = 0 ; i < luckNums.length ; i++) {
 				if(wagersID.endsWith(luckNums[i])) {
-					logger.info(session2Simulator.get(this.session.toString()).threadName+":幸运局号" + wagersID);
+                    // 更新幸运注单记录
+					recordLucyWager(result, session2Simulator.get(this.session.toString()).account.getEliminateWagerIds().size(), stickNum);
+                    session2Simulator.get(this.session.toString()).account.getLucyWagerIds().add(wagersID);
+                    logger.info(session2Simulator.get(this.session.toString()).threadName+":幸运局号" + wagersID);
 					break;
 				}
 			}
@@ -417,9 +485,7 @@ public class Simulator {
 				return;
 			}
 			
-			int eliminateCnt = 0;
-			
-			// 统计拐棍个数和连消次数
+			// 统计连消次数
 			for(int i = 0; i < data.getJSONArray("Lines").size() ; i++) {
 				for(int j = 0 ; j < data.getJSONArray("Lines").getJSONArray(i).size(); j++) {
 					int elementID = data.getJSONArray("Lines").getJSONArray(i).getJSONObject(j).getInt("ElementID");
@@ -429,31 +495,40 @@ public class Simulator {
 					}
 				}
 			}
-			outputWagerInfo(result, eliminateCnt);
+
+			if(eliminateCnt >= session2Simulator.get(this.session.toString()).account.getLeastEliminateCnt()) {
+				recordEliminateWagerIds(result, eliminateCnt, stickNum);
+				
+				// 更新连消记录
+				session2Simulator.get(this.session.toString()).account.getEliminateWagerIds().add(wagersID+":"+eliminateCnt);
+			}
+
+			outputWagerInfo("游戏分数余额:" + result.getJSONObject("data").getString("Credit_End") +"--连消次数"+ eliminateCnt) ;
+
 			logger.info(session2Simulator.get(this.session.toString()).threadName+":局号：" + wagersID + "--次数："+eliminateCnt);
 		}
 		
 		// 暂停
 		try {
-			// 用户输入
 			Thread.sleep(session2Simulator.get(this.session.toString()).account.getPeriodSeconds() + random.nextInt(1000));
 		} catch (Exception e) {
 			e.printStackTrace();	
 		}
-		session2Simulator.get(this.session.toString()).sendMessage(requestActions.get("beginGame2"));
+		
+		if(eliminateCnt <= 0) {
+			lineBetCount ++;
+			if(lineBetCount > 3) {
+				session2Simulator.get(this.session.toString()).sendMessage(requestActions.get("beginGame2_20"));
+				lineBetCount = 0;
+			} else {
+				session2Simulator.get(this.session.toString()).sendMessage(requestActions.get("beginGame2"));
+			}
+		} else {
+			session2Simulator.get(this.session.toString()).sendMessage(requestActions.get("beginGame2"));
+		}
 	}
 	
-	/**
-	 * 
-	 * @param result
-	 */
-	public void outputWagerInfo(JSONObject result, int eliminateCnt) {
-//		{"action":"onBeginGame","result":{"event":true,"data":{"event":true,"WagersID":"417358987506","EncryID":null,"BetInfo":{"event":true,"LineNum":"1","LineBet":"10","BetBalanceRate":"1","BetCreditRate":"10","BetCredit":10},"Credit":183,"Credit_End":"183.00","Cards":["2-3-3-5,4-2-4-2,3-1-2-3,2-1-3-2,3-5-2-4"],"Lines":[[]],"BrickNum":42,"LevelID":1,"PayTotal":0,"FreeTime":0,"DoubleTime":0,"BetTotal":10,"BBJackpot":{"Pools":[{"PoolID":"grand","JPTypeID":1,"PoolAmount":20625468.24073691,"timestamp":1564920379958},{"PoolID":"3819831","JPTypeID":2,"PoolAmount":11458248.331218395,"timestamp":1564920379958},{"PoolID":"3819831-5902","JPTypeID":3,"PoolAmount":9626724.942645557,"timestamp":1564920379958},{"PoolID":"573521233","JPTypeID":4,"PoolAmount":27.229499999999305,"timestamp":1564920379958}]},"BetValue":1,"PayValue":0},"time":[1564920379.928515,0.025136947631835938,0.008624076843261719,0.0019659996032714844,0.00015091896057128906,0.000027894973754882812,9.5367431640625e-7,0.0000059604644775390625,0.002902984619140625,0.00014495849609375,0.0039179325103759766,0.0000030994415283203125,0.0000040531158447265625,0.006662845611572266,0.0000011920928955078125,0.0003218650817871094,0.0000050067901611328125,0.00037789344787597656,0.0000050067901611328125]}}
-		
-		String creditEnd = result.getJSONObject("data").getString("Credit_End");
-		
-		String message = "余额:" + creditEnd +"--连消次数"+ eliminateCnt ;
-		
+	public void outputWagerInfo(String message) {
 		if(this.messages == null) {
 			this.messages = new ArrayList<>();
 		}
@@ -465,14 +540,70 @@ public class Simulator {
 		}
 	}
 	
-	public void recordEliminateWagerIds(JSONObject result, String wagerIdAndNums) {
-		session2Simulator.get(this.session.toString()).account.getEliminateWagerIds().add(wagerIdAndNums);
-		// TODO: 写入文件
+	/**
+	 * 记录连消数据
+	 * @param result
+	 * @param wagerIdAndNums
+	 */
+	public void recordEliminateWagerIds(JSONObject result, int eliminateCnt, int stickNum) {
+		JSONObject response = new JSONObject();
+		
+		response.put("wagers_id", result.getJSONObject("data").getDouble("WagersID"));
+		response.put("eliminate_cnt", eliminateCnt);
+		response.put("stick_num", stickNum);
+		response.put("lines", result.getJSONObject("data").getJSONArray("Lines"));
+		
+		session2Simulator.get(this.session.toString()).account.getEliminateRecords().add(response);
+		
+//			{"action":"onBeginGame","result":{"event":true,"data":{"event":true,"WagersID":"417344235702","EncryID":null,"BetInfo":{"event":true,"LineNum":"1","LineBet":"10","BetBalanceRate":"1","BetCreditRate":"10","BetCredit":10},"Credit":190,"Credit_End":"197.00","Cards":["4-3-4-2,1-2-1-3,1-1-3-3,1-2-5-3,5-1-2-1","2-4-2-1,1-3-4-5,3-2-1-3,4-2-5-2,5-1-2-1"],"Lines":[[{"ElementID":1,"Grids":"0,4,5,8","GridNum":4,"Payoff":2},{"ElementID":3,"Grids":"3,6,7,11","GridNum":4,"Payoff":5}],[]],"BrickNum":45,"LevelID":1,"PayTotal":7,"FreeTime":0,"DoubleTime":0,"BetTotal":10,"BBJackpot":{"Pools":[{"PoolID":"grand","JPTypeID":1,"PoolAmount":20583131.352584556,"timestamp":1564916247402},{"PoolID":"3819831","JPTypeID":2,"PoolAmount":11445838.140197525,"timestamp":1564916247402},{"PoolID":"3819831-5902","JPTypeID":3,"PoolAmount":9617510.15844473,"timestamp":1564916247402},{"PoolID":"573521233","JPTypeID":4,"PoolAmount":26.602499999999306,"timestamp":1564916247402}]},"BetValue":1,"PayValue":0.7},"time":[1564916247.36685,0.03379106521606445,0.008374929428100586,0.0034661293029785156,0.00016498565673828125,0.000019073486328125,9.5367431640625e-7,0.0000050067901611328125,0.009112119674682617,0.000370025634765625,0.002775907516479492,0.0000021457672119140625,0.0000040531158447265625,0.008796930313110352,0,0.000308990478515625,0.0000059604644775390625,0.0003631114959716797,0.0000069141387939453125]}}
+		// e.g. {"pid_num": 8172, "wagers_id": "395872629447", "eliminate_cnt": 8, "stick_num": 6, "lines": [[{"ElementID": 1, "Grids": "1,2,3,5,7,8,9,10,13,14", "GridNum": 10, "Payoff": 30}], [{"ElementID": 2, "Grids": "5,8,9,12", "GridNum": 4, "Payoff": 4}], [{"ElementID": 3, "Grids": "6,8,9,10,12,14", "GridNum": 6, "Payoff": 20}], [{"ElementID": 1, "Grids": "10,12,13,14", "GridNum": 4, "Payoff": 2}], [{"ElementID": 2, "Grids": "6,7,10,11,15", "GridNum": 5, "Payoff": 5}], [{"ElementID": 5, "Grids": "8,9,10,13", "GridNum": 4, "Payoff": 20}], [{"ElementID": 4, "Grids": "10,13,14,15", "GridNum": 4, "Payoff": 10}], [{"ElementID": 3, "Grids": "8,12,13,14", "GridNum": 4, "Payoff": 5}], []]}
+		write(session2Simulator.get(this.session.toString()).account.getWebSiteName() + "eliminate_record.txt", response.toString());
+	}
+
+	public static void main(String[] args) {
+		JSONObject o = JSONObject.fromObject("{\"event\":true,\"data\":{\"event\":true,\"WagersID\":\"417344235702\",\"EncryID\":null,\"BetInfo\":{\"event\":true,\"LineNum\":\"1\",\"LineBet\":\"10\",\"BetBalanceRate\":\"1\",\"BetCreditRate\":\"10\",\"BetCredit\":10},\"Credit\":190,\"Credit_End\":\"197.00\",\"Cards\":[\"4-3-4-2,1-2-1-3,1-1-3-3,1-2-5-3,5-1-2-1\",\"2-4-2-1,1-3-4-5,3-2-1-3,4-2-5-2,5-1-2-1\"],\"Lines\":[[{\"ElementID\":1,\"Grids\":\"0,4,5,8\",\"GridNum\":4,\"Payoff\":2},{\"ElementID\":3,\"Grids\":\"3,6,7,11\",\"GridNum\":4,\"Payoff\":5}],[]],\"BrickNum\":45,\"LevelID\":1,\"PayTotal\":7,\"FreeTime\":0,\"DoubleTime\":0,\"BetTotal\":10,\"BBJackpot\":{\"Pools\":[{\"PoolID\":\"grand\",\"JPTypeID\":1,\"PoolAmount\":20583131.352584556,\"timestamp\":1564916247402},{\"PoolID\":\"3819831\",\"JPTypeID\":2,\"PoolAmount\":11445838.140197525,\"timestamp\":1564916247402},{\"PoolID\":\"3819831-5902\",\"JPTypeID\":3,\"PoolAmount\":9617510.15844473,\"timestamp\":1564916247402},{\"PoolID\":\"573521233\",\"JPTypeID\":4,\"PoolAmount\":26.602499999999306,\"timestamp\":1564916247402}]},\"BetValue\":1,\"PayValue\":0.7},\"time\":[1564916247.36685,0.03379106521606445,0.008374929428100586,0.0034661293029785156,0.00016498565673828125,0.000019073486328125,9.5367431640625e-7,0.0000050067901611328125,0.009112119674682617,0.000370025634765625,0.002775907516479492,0.0000021457672119140625,0.0000040531158447265625,0.008796930313110352,0,0.000308990478515625,0.0000059604644775390625,0.0003631114959716797,0.0000069141387939453125]}");
+		
+				new Simulator().recordEliminateWagerIds(o, 1 ,2);
 	}
 	
-	public void recordLucyWager(JSONObject result, String wagerId) {
-		session2Simulator.get(this.session.toString()).account.getLucyWagerIds().add(wagerId);
-		// TODO: 写入文件
+	/**
+	 * 记录幸运注单
+	 * @param result
+	 * @param wagerId
+	 */
+	public void recordLucyWager(JSONObject result, int eliminateCnt, int stickNum) {
+		JSONObject response = new JSONObject();
+		
+		response.put("wagers_id", result.getJSONObject("data").getDouble("WagersID"));
+		response.put("eliminate_cnt", eliminateCnt);
+		response.put("stick_num", stickNum);
+		response.put("lines", result.getJSONObject("data").getJSONArray("Lines"));
+
+		session2Simulator.get(this.session.toString()).account.getLucyWagerRecords().add(response);
+		
+//			{"action":"onBeginGame","result":{"event":true,"data":{"event":true,"WagersID":"417344235702","EncryID":null,"BetInfo":{"event":true,"LineNum":"1","LineBet":"10","BetBalanceRate":"1","BetCreditRate":"10","BetCredit":10},"Credit":190,"Credit_End":"197.00","Cards":["4-3-4-2,1-2-1-3,1-1-3-3,1-2-5-3,5-1-2-1","2-4-2-1,1-3-4-5,3-2-1-3,4-2-5-2,5-1-2-1"],"Lines":[[{"ElementID":1,"Grids":"0,4,5,8","GridNum":4,"Payoff":2},{"ElementID":3,"Grids":"3,6,7,11","GridNum":4,"Payoff":5}],[]],"BrickNum":45,"LevelID":1,"PayTotal":7,"FreeTime":0,"DoubleTime":0,"BetTotal":10,"BBJackpot":{"Pools":[{"PoolID":"grand","JPTypeID":1,"PoolAmount":20583131.352584556,"timestamp":1564916247402},{"PoolID":"3819831","JPTypeID":2,"PoolAmount":11445838.140197525,"timestamp":1564916247402},{"PoolID":"3819831-5902","JPTypeID":3,"PoolAmount":9617510.15844473,"timestamp":1564916247402},{"PoolID":"573521233","JPTypeID":4,"PoolAmount":26.602499999999306,"timestamp":1564916247402}]},"BetValue":1,"PayValue":0.7},"time":[1564916247.36685,0.03379106521606445,0.008374929428100586,0.0034661293029785156,0.00016498565673828125,0.000019073486328125,9.5367431640625e-7,0.0000050067901611328125,0.009112119674682617,0.000370025634765625,0.002775907516479492,0.0000021457672119140625,0.0000040531158447265625,0.008796930313110352,0,0.000308990478515625,0.0000059604644775390625,0.0003631114959716797,0.0000069141387939453125]}}
+		// e.g. {"pid_num": 8172, "wagers_id": "395871676888", "eliminate_cnt": 0, "stick_num": 11, "lines": [[{"ElementID": 6, "GridNum": 1, "Grids": "8", "Payoff": 0, "BrickNum": [34]}], []]}
+		write(session2Simulator.get(this.session.toString()).account.getWebSiteName() + "wagers_record.txt", response.toString());
+	}
+	
+	/**
+	 * 记录换分数据
+	 * @param result
+	 * @param wagerId
+	 */
+	public void recordExchangeInfo(JSONObject result) {
+		JSONObject response = new JSONObject();
+		
+		response.put("balance", result.getJSONObject("data").getDouble("Balance"));
+		response.put("amount", result.getJSONObject("data").getDouble("Amount"));
+		response.put("balance_total", result.getJSONObject("data").getDouble("Balance") + result.getJSONObject("data").getDouble("Amount"));
+		response.put("bet_number", session2Simulator.get(this.session.toString()).account.getBetNumber());
+		
+		session2Simulator.get(this.session.toString()).account.getExchangeRecords().add(response);
+		
+//		{"action":"onBalanceExchange","result":{"event":true,"data":{"event":true,"TransCredit":"348.00","Amount":34.8,"Balance":103.3,"BetBase":""},"time":[0.05563497543334961,0.001756906509399414,0.053273916244506836,0.0006000995635986328]}}
+		// e.g. {"pid_num": 6792, "balance": 72.8, "amount": 4.3, "balance_total": 77.1, "bet_number": 3000}
+		write(session2Simulator.get(this.session.toString()).account.getWebSiteName() + "wagers_record.txt", response.toString());
 	}
 }
 
